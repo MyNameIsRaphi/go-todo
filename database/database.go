@@ -29,10 +29,14 @@ var todoCollection = client.Database(Database).Collection(Collection)
 func ConnectDB() error {
 	return connectionError
 }
+
 func AddUser(user types.User) error {
+	if Exists(user.Email) {
+		return fmt.Errorf("User with this email address already exists")
+	}
 	hashedPassword, hashError := encrypt.Hash(user.Password)
 	if hashError != nil {
-		panic(hashError)
+		return hashError
 	}
 
 	user.Password = hashedPassword
@@ -61,4 +65,14 @@ func GetUser(email string) (types.User, error) {
 
 	return foundUser, decodeError
 
+}
+
+func CheckCreditentials(email, password string) bool {
+	user, foundError := GetUser(email)
+
+	if foundError != nil {
+		return false
+	}
+
+	return encrypt.Compare(password, user.Password)
 }

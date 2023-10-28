@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 	"todo/database"
+	"todo/jwt"
 	"todo/types"
 
 	"github.com/sirupsen/logrus"
@@ -26,6 +27,12 @@ func main() {
 
 	setupLogger() // inistalize logger
 
+	works := jwt.TestJWT() // test if JWT works
+	if works {
+		logrus.Info("JWT Works")
+	} else {
+		logrus.Fatal("JWT not working")
+	}
 	connectionError := database.ConnectDB() // connect database
 
 	if connectionError != nil {
@@ -35,7 +42,7 @@ func main() {
 	}
 
 	user := types.User{
-		Email:                "raphaelkaeser05@gmail.com",
+		Email:                "raphaelkdfdfaeser05@gmail.com",
 		Password:             "12344242343",
 		NotificationsGranted: false,
 	}
@@ -46,6 +53,10 @@ func main() {
 	checkError(err)
 
 	logrus.Infof("Found user: %v", foundUser)
+
+	var isValid bool = database.CheckCreditentials(user.Email, user.Password)
+
+	logrus.Info(isValid)
 
 }
 

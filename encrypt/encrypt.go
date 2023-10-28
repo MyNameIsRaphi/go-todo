@@ -1,15 +1,29 @@
 package encrypt
 
 import (
-	"golang.org/x/crypto/bcrypt"
+	"crypto/sha512"
+	"encoding/hex"
+	"hash"
+
+	"github.com/sirupsen/logrus"
 )
 
 func Hash(word string) (string, error) {
-	hashedBytes, hashError := bcrypt.GenerateFromPassword([]byte(word), 10)
-	return string(hashedBytes), hashError
+	var h hash.Hash = sha512.New()
+
+	_, err := h.Write([]byte(word))
+	var hashedBytes []byte = h.Sum(nil)
+
+	var hashedWord string = hex.EncodeToString(hashedBytes)
+	logrus.Infof("Hash:%v ", hashedWord)
+	return hashedWord, err
 }
 
 func Compare(word, hashedWord string) bool {
-	compareError := bcrypt.CompareHashAndPassword([]byte(hashedWord), []byte(word))
-	return compareError == nil
+	hWord, err := Hash(word)
+	if err != nil {
+		logrus.WithError(err).Warn("Couldn't hash word")
+		return false
+	}
+	return hWord == hashedWord
 }
