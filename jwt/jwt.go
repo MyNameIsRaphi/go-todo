@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var key string = os.Getenv("jwt_key")
+var key string = os.Getenv("JWT_KEY")
 
 func CreateJWT(email string) (string, error) {
 	header, headerErr := createHeader()

@@ -1,11 +1,12 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"time"
 	"todo/database"
 	"todo/jwt"
-	"todo/types"
+	"todo/routes"
 
 	"github.com/sirupsen/logrus"
 )
@@ -25,7 +26,7 @@ func setupLogger() {
 
 func main() {
 
-	setupLogger() // inistalize logger
+	setupLogger() // init logger
 
 	works := jwt.TestJWT() // test if JWT works
 	if works {
@@ -33,35 +34,15 @@ func main() {
 	} else {
 		logrus.Fatal("JWT not working")
 	}
-	connectionError := database.ConnectDB() // connect database
+	database.ConnectDB() // connect database
 
-	if connectionError != nil {
-		logrus.Fatal(connectionError)
-	} else {
-		logrus.Info("Successfully connected to db")
-	}
-
-	user := types.User{
-		Email:                "raphaelkdfdfaeser05@gmail.com",
-		Password:             "12344242343",
-		NotificationsGranted: false,
-	}
-	checkError(database.AddUser(user))
-
-	foundUser, err := database.GetUser(user.Email)
-
-	checkError(err)
-
-	logrus.Infof("Found user: %v", foundUser)
-
-	var isValid bool = database.CheckCreditentials(user.Email, user.Password)
-
-	logrus.Info(isValid)
+	http.HandleFunc("/", routes.Middleware)
+	checkError(http.ListenAndServe("localhost:8080", nil))
 
 }
 
 func checkError(err error) {
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.WithError(err).Warn("Error occurred during operation")
 	}
 }

@@ -18,7 +18,5 @@ func TestJWT() bool {
 		logrus.Fatal(err)
 	}
 
-	logrus.Infof("Email: %v", jwtEMAIL)
-
-	return isValid
+	return isValid && email == jwtEMAIL
 }

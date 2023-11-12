@@ -7,6 +7,7 @@ import (
 	"todo/encrypt"
 	"todo/types"
 
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -17,17 +18,23 @@ const Database string = "todo"
 const Collection string = "todo"
 
 // load username and password from env for DB
-var username = os.Getenv("safeUsername")
-var password = os.Getenv("safeSecret")
+var username = os.Getenv("USERNAME")
+var password = os.Getenv("PASSWORD")
 
 var Uri string = fmt.Sprintf("mongodb://%v:%v@localhost:27017", username, password)
 var ServerAPI = options.ServerAPI(options.ServerAPIVersion1)
 var Option = options.Client().ApplyURI(Uri).SetServerAPIOptions(ServerAPI)
-var client, connectionError = mongo.Connect(context.TODO(), Option)
-var todoCollection = client.Database(Database).Collection(Collection)
+var client *mongo.Client
+var todoCollection *mongo.Collection
 
-func ConnectDB() error {
-	return connectionError
+func ConnectDB() {
+
+	cl, connectionError := mongo.Connect(context.TODO(), Option)
+	if connectionError != nil {
+		logrus.WithError(connectionError).Fatal("Couldn't connect to database")
+	}
+	client = cl
+	todoCollection = client.Database(Database).Collection(Collection)
 }
 
 func AddUser(user types.User) error {
@@ -71,6 +78,7 @@ func CheckCreditentials(email, password string) bool {
 	user, foundError := GetUser(email)
 
 	if foundError != nil {
+		logrus.Warn("Couldn't find user")
 		return false
 	}
 
