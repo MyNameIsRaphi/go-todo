@@ -1,6 +1,9 @@
 package jwt
 
-import "github.com/sirupsen/logrus"
+import (
+
+	"github.com/sirupsen/logrus"
+)
 
 func TestJWT() bool {
 	var email string = "example@email.com"
@@ -11,12 +14,10 @@ func TestJWT() bool {
 		logrus.Fatal(createErr)
 	}
 	isValid := Validate(firstToken)
-
 	jwtEMAIL, err := GetEmail(firstToken)
 
 	if err != nil {
 		logrus.Fatal(err)
 	}
-
 	return isValid && email == jwtEMAIL
 }

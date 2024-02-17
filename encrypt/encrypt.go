@@ -24,7 +24,7 @@ func Compare(word, hashedWord string) bool {
 	logrus.Infof("Unhashed word: %v", word)
 	hWord, err := Hash(word)
 	if err != nil {
-		logrus.WithError(err).Warn("Couldn't hash word")
+		logrus.WithError(err).Warn("Failed hash word")
 		return false
 	}
 	return hWord == hashedWord

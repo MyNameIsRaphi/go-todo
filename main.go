@@ -25,7 +25,7 @@ func setupLogger() {
 }
 
 func main() {
-
+	
 	setupLogger() // init logger
 
 	works := jwt.TestJWT() // test if JWT works
@@ -34,8 +34,8 @@ func main() {
 	} else {
 		logrus.Fatal("JWT not working")
 	}
-	database.ConnectDB() // connect database
-
+	err := database.ConnectDB() // connect database
+	checkError(err)
 	http.HandleFunc("/", routes.Middleware)
 	checkError(http.ListenAndServe("localhost:8080", nil))
 

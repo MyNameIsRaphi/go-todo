@@ -68,7 +68,6 @@ func Validate(token string) bool {
 
 func Verify(sig, actSig string) bool {
 	var HMAC string = createHMAC(sig)
-	fmt.Printf("Actual Signature: %v\nSignature:%v\n", sig, actSig)
 	return HMAC == actSig
 }
 
@@ -113,7 +112,6 @@ func createHMAC(s string) string {
 	mac := hmac.New(sha512.New, []byte(key))
 
 	mac.Write([]byte(s))
-
 	return hex.EncodeToString(mac.Sum(nil))
 }
 

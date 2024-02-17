@@ -21,20 +21,20 @@ const Collection string = "todo"
 var username = os.Getenv("USERNAME")
 var password = os.Getenv("PASSWORD")
 
-var Uri string = fmt.Sprintf("mongodb://%v:%v@localhost:27017", username, password)
+var Uri string = fmt.Sprintf("mongodb://%s:%s@localhost:27017", username, password)
 var ServerAPI = options.ServerAPI(options.ServerAPIVersion1)
 var Option = options.Client().ApplyURI(Uri).SetServerAPIOptions(ServerAPI)
 var client *mongo.Client
 var todoCollection *mongo.Collection
 
-func ConnectDB() {
-
+func ConnectDB() error {
 	cl, connectionError := mongo.Connect(context.TODO(), Option)
 	if connectionError != nil {
-		logrus.WithError(connectionError).Fatal("Couldn't connect to database")
+		return connectionError
 	}
 	client = cl
 	todoCollection = client.Database(Database).Collection(Collection)
+	return nil
 }
 
 func AddUser(user types.User) error {
