@@ -3,3 +3,5 @@
 /DockerFile
 /todo
 /server
+/go.sum
+/.dockerignore

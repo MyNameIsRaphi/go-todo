@@ -35,7 +35,7 @@
           <div class="mb-3">
             <label for="exampleInputPassword1" class="form-label">Password</label>
             <input type="password" class="form-control password" id="exampleInputPassword1" name="password">
-            {{  if .unauth }}
+            {{  if .Unauth }}
             <div style="visibility: visible;"emailHelp class="form-text isvalid">Password or email is wrong</div>
             {{ else }}
             <div style="visibility: hidden;"emailHelp class="form-text isvalid">Password or email is wrong</div>

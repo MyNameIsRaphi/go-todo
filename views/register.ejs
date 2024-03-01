@@ -35,16 +35,16 @@
                   <input type="email" name= "email" class="form-control enteredEmail" id="specificSizeInputGroupUsername" placeholder="Email">
                   
                 </div>
-                <% if (locals.emailUsedError){ %>
+                {{ if .EmailUsedError }}
                 <div id="emailHelp" class="form-text emailUsedError error">Account with this email already exists</div>
-                <% } else { %>
+                {{ else }} 
                   <div style="visibility: hidden;" id="emailHelp" class="form-text emailUsedError error">Account with this email already exists</div>
-                  <% } %>
-                  <%   if (locals.noEmailError){ %>
+                  {{ end }} 
+                  {{ if .NoEmailError }}
                 <div id="emailHelp" class="form-text noEmailError error">Please enter a valid email address</div>
-                <% } else {%>
+                {{ else }} 
                   <div style="visibility: hidden;" id="emailHelp" class="form-text noEmailError error">Please enter a valid email address</div>
-                  
+                  {{ end }} 
                 </div>
           </div>
           <div class="password">
@@ -70,17 +70,17 @@
                   class="form-control confirmedPassword"
                   id="inputPassword5"
                 />
-                <% } if (locals.noMatchError){ %>
+                {{ if .NoMatchError  }}
                 <div id="emailHelp" class="form-text noMatchError error">Passwords don't match</div>
-                <% } else {%>
+                {{ else }} 
                 <div style="visibility: hidden;" id="emailHelp" class="form-text noMatchError error">Passwords don't match</div>
-                <% } %>
-                <%  if (locals.noPassWordError){ %>
+                {{ end }} 
+                {{ if .NoPassWordError  }}
                 <div id="emailHelp" class="form-text noPasswordError error ">Password must be at least 8 charactes long</div>
                 
-                <% } else { %>
+                {{ else  }}
                   <div style="visibility: hidden;" id="emailHelp" class="form-text noPasswordError error">Password must be at least 8 charactes long</div>
-                  <% } %>
+                  {{ end }}
               </div>
             </div>
           </form>

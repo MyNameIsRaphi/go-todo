@@ -14,7 +14,7 @@ import (
 func setupLogger() {
 	logrus.SetOutput(os.Stderr)
 
-	var textFormatter logrus.TextFormatter = logrus.TextFormatter{
+	textFormatter  := logrus.TextFormatter{
 		DisableColors:   false,
 		TimestampFormat: time.RFC3339Nano,
 		FullTimestamp:   true,
@@ -35,9 +35,13 @@ func main() {
 		logrus.Fatal("JWT not working")
 	}
 	err := database.ConnectDB() // connect database
-	checkError(err)
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to connect to database")
+	}else {
+		logrus.Info("Successfully connected to database")
+	}
 	http.HandleFunc("/", routes.Middleware)
-	checkError(http.ListenAndServe("localhost:8080", nil))
+	checkError(http.ListenAndServe("localhost:80", nil))
 
 }
 
