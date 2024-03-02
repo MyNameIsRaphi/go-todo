@@ -13,7 +13,7 @@ func getRoot(res *http.ResponseWriter, req *http.Request) error{
 
 	// Check if request is already logged in, if yes send them the corresponding html document
 	// otherwise send login form
-	token, err := req.Cookie("jwt")
+	token, err := req.Cookie("JWT")
 	if  err == http.ErrNoCookie || !jwt.Validate(token.String()) {
 	
 		tmpl,err := template.ParseFiles("views/login.ejs")	
@@ -28,11 +28,13 @@ func getRoot(res *http.ResponseWriter, req *http.Request) error{
 			return err
 		}
 	} else {
-		http.Redirect(*res, req,"/", http.StatusMovedPermanently)
-		
+		// send home page 
+		http.Redirect(*res, req, "/home", http.StatusMovedPermanently)
 	}
 	return nil
 }
+
+
 
 func getRegister(res *http.ResponseWriter, req *http.Request) error {
 	templ, err := template.ParseFiles("views/register.ejs")

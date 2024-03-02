@@ -2,19 +2,23 @@ package routes
 
 import (
 	"fmt"
-	"todo/types"
 	"html/template"
 	"net/http"
 	"time"
 	"todo/database"
 	"todo/encrypt"
+	"todo/jwt"
+	"todo/types"
+
+	"github.com/google/uuid"
+	"github.com/sirupsen/logrus"
 )
 
 func postRoot(res *http.ResponseWriter, req *http.Request) error {
 	
 	var start = time.Now()
 	const WAIT_TIME_SEC = 2
-
+	
 
 	var err error
 	parse_err := (*req).ParseForm()	
@@ -64,7 +68,16 @@ func postRoot(res *http.ResponseWriter, req *http.Request) error {
 
 		if found_usr.Password == hashedPassword {
 			wait(&start, WAIT_TIME_SEC)
+			token, err := jwt.CreateJWT(found_usr.ID)
+			if err == nil {
+				(*res).Header().Add("Cookie", "JWT="+token)
+
+			} else {
+				logrus.WithError(err).Info("Failed to create JWT")
+			}
+			
 			// send todo home page with content
+			
 			
 		} else {
 			return sendInvalidtempl(res)
@@ -102,7 +115,9 @@ func postRegister(res *http.ResponseWriter, req *http.Request) error {
 	if hash_err != nil {
 		return hash_err
 	}
-	newUser := types.User{Email:email, Password:hash_pw, NotificationsGranted:false}	
+	var new_uuid uuid.UUID = uuid.New()
+	
+	newUser := types.User{Email:email, Password:hash_pw, NotificationsGranted:false, ID: new_uuid.String()}	
 	database.AddUser(newUser)	
 	return nil
 }
