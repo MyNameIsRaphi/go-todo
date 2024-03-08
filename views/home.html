@@ -1,0 +1,33 @@
+<html>
+	<head>
+		<link rel="stylesheet" type="" href="style.css">
+		
+	</head>
+	<body>
+	<p style="text-align:center"><span style="font-size:28px"><strong>To Do</strong></span></p>
+
+	<p style="text-align:center"><span style="font-size:20px"><strong>In Progess</strong></span></p>
+
+	<ul style="margin-left:240px">
+		
+		<li>
+			<form action="/done" method="put">
+					<input type="submit" id="vehicle1" name="vehicle1" value="done">
+					<label for="vehicle1"> I have a bike</label><br>
+			</form>
+		</li>
+	</ul>
+
+	<p style="text-align:center"><strong><span style="font-size:20px">Done </span></strong></p>
+
+	<ul style="margin-left:240px">
+			<li>
+				<form action="/undo" method="put">
+					<input type="submit" id="vehicle1" name="vehicle1" value="undo">
+					<label for="vehicle1"> I have a bike</label><br>
+				</form>
+			
+			</li>
+	</ul>
+	</body>
+</html>
