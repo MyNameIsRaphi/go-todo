@@ -11,14 +11,16 @@ type User struct {
 	//	ID	primitive.ObjectID `bson:"_id"`
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
-	ID string `json:"id"`
-	ToDos []ToDo `json:"toDos"`
+	ID        string `json:"id"`
+	ToDos     []ToDo `json:"toDos"`
 }
 type ToDo struct {
 	NotificationsEnabled bool      `json:"notificationEnabled"`
 	Title                string    `json:"title"`
 	Description          string    `json:"description"`
 	AlertTime            time.Time `json:"alertTime"`
+	Date                 time.Time `json:"date"`
+	Status               bool      `json:"status"`
 }
 
 type ReqgisterRequest struct {
