@@ -3,9 +3,10 @@ package database
 import (
 	"context"
 	"fmt"
-	"os"
 	"todo/encrypt"
 	"todo/types"
+
+	"todo/config"
 
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,8 +19,8 @@ const Database string = "todo"
 const Collection string = "todo"
 
 // load username and password from env for DB
-var username = os.Getenv("USERNAME")
-var password = os.Getenv("PASSWORD")
+var username = config.Config.USERNAME
+var password = config.Config.PASSWORD
 
 var Uri string = fmt.Sprintf("mongodb://%s:%s@localhost:27017", username, password)
 var ServerAPI = options.ServerAPI(options.ServerAPIVersion1)
