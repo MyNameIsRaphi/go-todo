@@ -5,3 +5,4 @@
 /server
 /go.sum
 /.dockerignore
+/config.json
