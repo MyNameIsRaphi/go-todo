@@ -7,12 +7,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"time"
+	"todo/config"
 )
 
-var key string = os.Getenv("JWT_KEY")
+var key string = config.Config.JWT_KEY
 
 func CreateJWT(email string) (string, error) {
 	header, headerErr := createHeader()
@@ -103,6 +103,7 @@ func createSignature(header, payload string) (string, error) {
 	decryptSig := header + "." + payload
 	if key == "" {
 		return "", fmt.Errorf("No Key declared")
+
 	}
 	return createHMAC(decryptSig), nil
 
