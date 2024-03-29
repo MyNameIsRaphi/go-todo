@@ -24,31 +24,31 @@
             <form method="get" action="/">
               <button type="submit" class="btn btn-link">Sign in</button>
             </form>
-            
+
           </div>
-          <form method="POST" action="/registering" class="second">
+          <form method="POST" action="/register" class="second">
             <div class="email">
               <div class="col-md-7">
                 <label class="visually-hidden" for="specificSizeInputGroupUsername">Email</label>
                 <div class="input-group">
                   <div class="input-group-text">@</div>
                   <input type="email" name= "email" class="form-control enteredEmail" id="specificSizeInputGroupUsername" placeholder="Email">
-                  
+
                 </div>
                 {{ if .EmailUsedError }}
                 <div id="emailHelp" class="form-text emailUsedError error">Account with this email already exists</div>
-                {{ else }} 
+                {{ else }}
                   <div style="visibility: hidden;" id="emailHelp" class="form-text emailUsedError error">Account with this email already exists</div>
-                  {{ end }} 
+                  {{ end }}
                   {{ if .NoEmailError }}
                 <div id="emailHelp" class="form-text noEmailError error">Please enter a valid email address</div>
-                {{ else }} 
+                {{ else }}
                   <div style="visibility: hidden;" id="emailHelp" class="form-text noEmailError error">Please enter a valid email address</div>
-                  {{ end }} 
+                  {{ end }}
                 </div>
           </div>
           <div class="password">
-            <div class="newPassword"> 
+            <div class="newPassword">
               <div class="col-md-7">
                 <label for="inputPassword4" class="form-label">Password</label>
                 <input
@@ -72,12 +72,12 @@
                 />
                 {{ if .NoMatchError  }}
                 <div id="emailHelp" class="form-text noMatchError error">Passwords don't match</div>
-                {{ else }} 
+                {{ else }}
                 <div style="visibility: hidden;" id="emailHelp" class="form-text noMatchError error">Passwords don't match</div>
-                {{ end }} 
+                {{ end }}
                 {{ if .NoPassWordError  }}
                 <div id="emailHelp" class="form-text noPasswordError error ">Password must be at least 8 charactes long</div>
-                
+
                 {{ else  }}
                   <div style="visibility: hidden;" id="emailHelp" class="form-text noPasswordError error">Password must be at least 8 charactes long</div>
                   {{ end }}
@@ -89,12 +89,12 @@
             <div id="submitButtonDIV">
               <button type="submit" class="btn btn-primary" id="signin">Register</button>
             </div>
-           
-            
+
+
           </div>
         </div>
       </div>
     </div>
   </body>
- 
+
 </html>
