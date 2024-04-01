@@ -1,12 +1,12 @@
 package routes
 
 import (
+	"encoding/json"
 	"fmt"
-	"html/template"
+	"io"
 	"net/http"
 	"time"
 	"todo/database"
-	"todo/encrypt"
 	"todo/jwt"
 	"todo/types"
 
@@ -14,149 +14,187 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func postRoot(res *http.ResponseWriter, req *http.Request) error {
+type Post struct {
+	Request
+}
 
-	var start = time.Now()
-	const WAIT_TIME_SEC = 2
+func (P Post) Init() error {
+	P.startTime = time.Now()
+	b, err := io.ReadAll(P.req.Body)
+	P.status = 200
+	if err != nil {
+		P.status = 400
+		(*P.res).WriteHeader(P.status)
+		return err
+	}
+	P.body = b
 
-	var err error
-	parse_err := (*req).ParseForm()
+	var d Default
 
-	if parse_err != nil {
-		wait(&start, WAIT_TIME_SEC)
-		err = sendInvalidtempl(res)
-		if err != nil {
-			http.Error(*res, "Internal server error", http.StatusInternalServerError)
-		}
-		return parse_err
+	err = json.Unmarshal(b, &d)
 
-	} else {
-		email := req.FormValue("email")
-		password := req.FormValue("password")
-		if email == "" || password == "" {
-			wait(&start, WAIT_TIME_SEC)
-			err = sendInvalidtempl(res)
-			if err != nil {
-				http.Error(*res, "Internal server error", http.StatusInternalServerError)
-				return err
-			}
-			return nil
-		}
-		found_usr, usr_err := database.GetUser(email)
-		if usr_err != nil {
-			wait(&start, WAIT_TIME_SEC)
+	if err != nil {
+		P.status = 400
+		(*P.res).WriteHeader(P.status)
+		return err
+	}
 
-			err = sendInvalidtempl(res)
-			if err != nil {
-				http.Error(*res, "Internal server error", http.StatusInternalServerError)
-				return err
-			}
-			return usr_err
-		}
+	P.token = d.Token
 
-		hashedPassword, hash_err := encrypt.Hash(password)
-		if hash_err != nil {
-			wait(&start, WAIT_TIME_SEC)
-			err = sendInvalidtempl(res)
-			if err != nil {
-				http.Error(*res, "Internal server error", http.StatusInternalServerError)
-				return err
-			}
-			return hash_err
-		}
-
-		if found_usr.Password == hashedPassword {
-			wait(&start, WAIT_TIME_SEC)
-			token, err := jwt.CreateJWT(found_usr.ID)
-			if err == nil {
-				(*res).Header().Add("Cookie", "JWT="+token)
-
-			} else {
-				logrus.WithError(err).Info("Failed to create JWT")
-			}
-
-			// send todo home page with content
-
-		} else {
-			return sendInvalidtempl(res)
-			// send invalid login
-		}
-
+	P.auth = jwt.Validate(P.token)
+	if !P.auth {
+		P.status = 401
+		(*P.res).WriteHeader(P.status)
+		return fmt.Errorf("invalid token")
 	}
 	return nil
 }
 
-func postRegister(res *http.ResponseWriter, req *http.Request) error {
-	var start time.Time = time.Now()
-	const WAIT_TIME_SEC = 2
+func (P Post) Login() error {
 
-	parse_err := req.ParseForm()
-
-	if parse_err != nil {
-		wait(&start, WAIT_TIME_SEC)
-		return sendInvalidRegister(res, false, true, false)
+	var body loginRequest
+	res := P.res
+	err := json.Unmarshal(P.body, &body)
+	if err != nil {
+		return sendJSON[loginData](res, loginData{false, ""})
 	}
-	pw1 := req.FormValue("password")
-	pw2 := req.FormValue("confirmedPassword")
-	email := req.FormValue("email")
+
+	var data loginData
+	// check if username and password is valid
+	var isValid bool = database.CheckCreditentials(body.Email, body.Password)
+
+	if isValid {
+		token, err := jwt.CreateJWT(body.Email)
+		if err == nil {
+			data = loginData{true, token}
+		}
+	} else {
+		data = loginData{false, ""}
+	}
+
+	// send response
+	(*res).Header().Set("Content-Type", "application/json")
+	wait(&P.startTime, P.wait_time_sec)
+	return sendJSON[loginData](res, data)
+
+}
+
+func (P Post) Register() error {
+	var body registerRequest
+	var data registerData
+	var inValid = false
+	var err error
+	// read request body
+
+	err = json.Unmarshal(P.body, &body)
+	if err != nil {
+		logrus.Error(err)
+		data = registerData{false, false, false, true}
+		P.status = 400
+		(*P.res).WriteHeader(P.status)
+		wait(&P.startTime, P.wait_time_sec)
+		return sendJSON[registerData](P.res, data)
+
+	}
+	pw1 := body.ConfirmedPassword
+	pw2 := body.Password
+	email := body.Email
+
+	// validate creditentials
 	if pw1 == "" || pw2 == "" || email == "" || pw1 != pw2 || len(pw1) < 8 {
-		wait(&start, WAIT_TIME_SEC)
-		return sendInvalidRegister(res, false, true, false)
+		inValid = true
+		logrus.Info("Email or password don't match")
+		data = registerData{false, false, true, false}
+
 	} else if database.Exists(email) {
-		wait(&start, WAIT_TIME_SEC)
-		return sendInvalidRegister(res, false, false, true)
+		inValid = true
+		logrus.Info("User already exists")
+		data = registerData{false, true, false, false}
+	}
+
+	// send response
+	if inValid {
+		P.status = 400
+		(*P.res).WriteHeader(P.status)
+		wait(&P.startTime, P.wait_time_sec)
+		return sendJSON[registerData](P.res, data)
+
 	}
 	// Add email validation
-	hash_pw, hash_err := encrypt.Hash(pw1)
-	if hash_err != nil {
-		return hash_err
-	}
+
 	var new_uuid uuid.UUID = uuid.New()
+	newUser := types.User{Email: email, Password: pw1, NotificationsGranted: false, ID: new_uuid.String()}
+	err = database.AddUser(newUser)
+	if err != nil {
+		P.status = http.StatusInternalServerError
+		logrus.WithError(err).Error("failed to add user to database")
+		data = registerData{false, false, false, false}
 
-	newUser := types.User{Email: email, Password: hash_pw, NotificationsGranted: false, ID: new_uuid.String()}
-	database.AddUser(newUser)
-	return nil
-}
-
-func sendInvalidRegister(res *http.ResponseWriter, user_exists, pw_correct, pw_match bool) error {
-
-	var data registerData = registerData{false, false, false, false}
-	switch true {
-	case user_exists:
-		data.EmailUsedError = true
-	case pw_correct:
-		data.NoEmailError = true
-	case pw_match:
-		data.NoMatchError = true
-	default:
-		return fmt.Errorf("None of entered errors are true")
-
+	} else {
+		P.status = 200
+		logrus.Info("successfully added user to database")
+		data = registerData{true, false, false, false}
 	}
-	templ, err := template.ParseFiles("html/register.ejs")
+	(*P.res).WriteHeader(P.status)
+	wait(&P.startTime, P.wait_time_sec)
+	return sendJSON[registerData](P.res, data)
+
+}
+func (P Post) AddToDo() error {
+	var body addToDoRequest
+	var err error
+	var email string
+	var user types.User
+
+	err = json.Unmarshal(P.body, &body)
+
+	if err != nil {
+		return err
+	}
+	email, err = jwt.GetEmail(P.token)
 	if err != nil {
 		return err
 	}
 
-	return templ.Execute(*res, data)
-}
+	user, err = database.GetUser(email)
 
-func wait(start *time.Time, wait_time_sec int) {
-	var end time.Time = time.Now()
-
-	var duration int64 = end.Sub(*start).Nanoseconds()
-
-	var waitime int64 = (int64(wait_time_sec) * 1_000_000_000) - duration
-	time.Sleep(time.Duration(waitime))
-
-}
-
-func sendInvalidtempl(res *http.ResponseWriter) error {
-	templ, err := template.ParseFiles("html/login.ejs")
 	if err != nil {
 		return err
 	}
 
-	data := loginData{true}
-	return templ.Execute(*res, data)
+	user.ToDos = append(user.ToDos, body.New)
 
+	err = sendJSON(P.res, defaultResponse{true, "Successfully added todo"})
+	return err
+}
+
+type addToDoRequest struct {
+	Token string
+	New   types.ToDo
+}
+
+type registerData struct {
+	Success        bool
+	EmailUsedError bool
+	InCorrectData  bool
+	NoBodyError    bool
+}
+
+type loginData struct {
+	Auth  bool
+	Token string
+}
+
+type registerRequest struct {
+	Email                string
+	Password             string
+	ConfirmedPassword    string
+	FirstName            string
+	LastName             string
+	NotificationsGranted bool
+}
+
+type loginRequest struct {
+	Password string
+	Email    string
 }
