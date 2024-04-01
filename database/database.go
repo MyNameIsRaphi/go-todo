@@ -35,7 +35,7 @@ func ConnectDB() error {
 	}
 	client = cl
 	todoCollection = client.Database(Database).Collection(Collection)
-	return nil
+	return connectionError
 }
 
 func AddUser(user types.User) error {
@@ -84,4 +84,16 @@ func CheckCreditentials(email, password string) bool {
 	}
 
 	return encrypt.Compare(password, user.Password)
+}
+
+func UpdateUser(old, new types.User) error {
+	var updateOptions = options.UpdateOptions{}
+	var filter = bson.M{"email": old.Email}
+	_, err := todoCollection.UpdateOne(
+		context.TODO(),
+		filter,
+		new,
+		&updateOptions,
+	)
+	return err
 }
