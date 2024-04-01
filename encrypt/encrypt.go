@@ -15,7 +15,6 @@ func Hash(word string) (string, error) {
 	var hashedBytes []byte = h.Sum(nil)
 
 	var hashedWord string = hex.EncodeToString(hashedBytes)
-	logrus.Infof("Hash:%v ", hashedWord)
 	return hashedWord, err
 }
 
