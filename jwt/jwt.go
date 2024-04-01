@@ -13,6 +13,7 @@ import (
 )
 
 var key string = config.Config.JWT_KEY
+var blacklist []string
 
 func CreateJWT(email string) (string, error) {
 	header, headerErr := createHeader()
@@ -35,6 +36,25 @@ func CreateJWT(email string) (string, error) {
 
 	return header + "." + payload + "." + signature, nil
 
+}
+func AddToBlackList(token string) {
+	blacklist = append(blacklist, token)
+}
+func RemoveFromBlacklist(token string) error {
+	var foundIndex int = -1
+
+	for i := 0; i < len(blacklist); i++ {
+		if blacklist[i] == token {
+			foundIndex = i
+		}
+	}
+
+	if foundIndex == -1 {
+		return fmt.Errorf("failed to find token in blacklist")
+	}
+
+	blacklist = append(blacklist[:foundIndex], blacklist[foundIndex+1:]...)
+	return nil
 }
 func GetEmail(token string) (string, error) {
 	var payload string = strings.SplitAfter(token, ".")[1]
