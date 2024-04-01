@@ -73,6 +73,12 @@ func GetEmail(token string) (string, error) {
 }
 
 func Validate(token string) bool {
+	for i := 0; i < len(blacklist); i++ {
+		if blacklist[i] == token {
+			return false
+		}
+	}
+
 	splitedToken := strings.SplitAfter(token, ".")
 
 	signature := splitedToken[2]
@@ -82,11 +88,11 @@ func Validate(token string) bool {
 	verifyPayload := splitedToken[1]
 	verifyPayload = strings.ReplaceAll(verifyPayload, ".", "")
 
-	return Verify(verifyHeader+"."+verifyPayload, signature)
+	return verify(verifyHeader+"."+verifyPayload, signature)
 
 }
 
-func Verify(sig, actSig string) bool {
+func verify(sig, actSig string) bool {
 	var HMAC string = createHMAC(sig)
 	return HMAC == actSig
 }
