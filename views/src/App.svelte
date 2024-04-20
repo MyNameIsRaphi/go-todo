@@ -1,6 +1,10 @@
 <script>
     import { onMount } from "svelte";
+    import Login from "./lib/login.svelte";
+    import Content from "./lib/content.svelte";
     let todos;
+    let showRegister = false;
+    let showLogin = true;
     $: jwt = getCookie("JWT");
     const serverIP = location.host;
 
@@ -29,36 +33,50 @@
 </script>
 
 <main>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
-        rel="preconnect"
-        href="https://fonts.gstatic.com"
-        crossorigin="true"
-    />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Roboto&display=swap"
         rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
-    <h1>To Do</h1>
-    {#await todos}
-        Loading todos...
-    {:then resp}
-        <ul class="todo-list">
-            <h2 class="todo-titles">title &emsp date &esmp status</h2>
-            {#each resp as todo}
-                <li class="todo-element">
-                    {todo.title} &esmp {todo.date} &esmp {todo.status}
-                </li>
-            {/each}
-        </ul>
-    {/await}
+    <div class="container">
+        <div class="title">
+            <h1 class="animate__backInDown animate__animated">to do app</h1>
+        </div>
+        <div class="content">
+            {#if showLogin || showRegister}
+                <Login bind:showLogin bind:showRegister />
+            {:else}
+                <Content />
+            {/if}
+        </div>
+    </div>
 </main>
 
 <style>
-    main {
-        background-color: #eadbc8;
+    *,
+    *::before,
+    *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
-    .todo-element {
-        font-family: "Roboto", sans-serif;
+    .title {
+        grid-area: 1/2/1/3;
+        display: flex;
+        justify-content: flex-start;
+        align-items: flex-end;
+    }
+    .title > h1 {
+        font-size: 50pt;
+    }
+    .container {
+        display: grid;
+        grid-template-rows: 1fr 4fr 1fr;
+        grid-template-columns: 1fr 4fr 1fr;
+        height: 100vh;
+        width: 100vw;
+        margin: 0px 0px 0px 0px;
+    }
+    .content {
+        grid-area: 2/2/3/3;
     }
 </style>

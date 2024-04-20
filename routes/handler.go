@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-	"todo/types"
 
 	"github.com/sirupsen/logrus"
 )
@@ -60,12 +59,15 @@ func PostRequest(resp *http.ResponseWriter, req *http.Request) {
 	var path string = req.URL.Path
 	var err error
 	var post = Post{Request{res: resp, req: req, wait_time_sec: 2}}
-	err = post.Init()
-	if err != nil {
-		logrus.WithError(err).Error("failed to init post request")
-		http.Error(*resp, "bad request", 400)
-		return
+	if path != "/login" && path != "/register" {
+		err = post.Init()
+		if err != nil {
+			logrus.WithError(err).Error("failed to init post request")
+			http.Error(*resp, "bad request", 400)
+			return
+		}
 	}
+
 	switch path {
 	case "/login":
 		err = post.Login()
@@ -74,7 +76,7 @@ func PostRequest(resp *http.ResponseWriter, req *http.Request) {
 		// TODO add register handler
 		err = post.Register()
 	case "/addtodo":
-
+		err = post.AddToDo()
 	default:
 		// TODO add default handler for post
 	}
@@ -91,11 +93,7 @@ func GetRequests(res *http.ResponseWriter, req *http.Request) {
 	switch path {
 	case "/":
 		// TODO send html page
-	case "/home":
-		// TODO add home handler
-	case "/register":
-	case "/style.css":
-	case "/registerCSS.css":
+		err = getRoot(res, req)
 	default:
 		// TODO add default response function
 		err = getMainAssets(res, req)
@@ -135,12 +133,6 @@ func wait(start *time.Time, wait_time_sec int) {
 
 type Default struct {
 	Token string
-}
-
-type updateToDo struct {
-	OldToDo types.ToDo
-	NewToDo types.ToDo
-	Token   string
 }
 
 type defaultResponse struct {

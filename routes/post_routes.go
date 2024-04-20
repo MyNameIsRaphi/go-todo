@@ -40,8 +40,11 @@ func (P Post) Init() error {
 	}
 
 	P.token = d.Token
+	P.auth = false
+	if d.Token != "" {
 
-	P.auth = jwt.Validate(P.token)
+		P.auth = jwt.Validate(P.token)
+	}
 	if !P.auth {
 		P.status = 401
 		(*P.res).WriteHeader(P.status)
@@ -84,6 +87,13 @@ func (P Post) Register() error {
 	var data registerData
 	var inValid = false
 	var err error
+	b, err := io.ReadAll(P.req.Body)
+	data = registerData{false, false, false, true}
+	if err != nil {
+		(*P.res).WriteHeader(400)
+		return sendJSON[registerData](P.res, data)
+	}
+	P.body = b
 	// read request body
 
 	err = json.Unmarshal(P.body, &body)

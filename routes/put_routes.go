@@ -122,3 +122,9 @@ func (P Put) UpdateToDo(res *http.ResponseWriter, req *http.Request) error {
 	return sendJSON(res, resp)
 
 }
+
+type updateToDo struct {
+	OldToDo types.ToDo
+	NewToDo types.ToDo
+	Token   string
+}
